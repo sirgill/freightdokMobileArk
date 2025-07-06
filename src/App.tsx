@@ -1,6 +1,12 @@
-import React from 'react';
-import { View, Text } from 'react-native';
+import React, { useEffect } from 'react';
+import { Provider } from 'react-redux';
+import { store } from './store';
+import { RootNavigator } from './navigation/RootNavigator';
 
 export default function App() {
-  return <View style={{flex:1, justifyContent:'center', alignItems:'center'}}><Text>Hello</Text></View>;
+  return (
+    <Provider store={store}>
+      <RootNavigator />
+    </Provider>
+  );
 }

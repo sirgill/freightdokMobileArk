@@ -1,7 +1,8 @@
 import axios from 'axios';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import { getApiUrl } from '../config';
 
-const API_URL = 'https://api.freightdok.io'; // Base URL for the API
+const API_URL = getApiUrl();
 
 const api = axios.create({
   baseURL: API_URL,

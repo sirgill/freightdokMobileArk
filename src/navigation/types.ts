@@ -10,9 +10,10 @@ export type AuthStackParamList = {
 };
 
 export type MainTabParamList = {
-  Home: undefined;
+  OpenBoard: undefined;
   MyLoads: undefined;
-  Book: undefined;
+  Active: undefined;
+  Delivered: undefined;
   Account: undefined;
 };
 
