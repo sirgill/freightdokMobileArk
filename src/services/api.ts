@@ -101,23 +101,27 @@ export const authApi = {
   },
 };
 
-export const getActiveLoads = async () => {
-  console.log('getActiveLoads called');
+export const getActiveLoads = async (page = 1) => {
+  console.log('getActiveLoads called, page:', page);
   const token = await AsyncStorage.getItem('token');
   console.log('Current token in getActiveLoads:', token ? 'Token exists' : 'No token');
   
-  const response = await api.get('/api/load/me');
+  const response = await api.get(`/api/load/me?page=${page}&limit=100`);
   console.log('Loads response structure:', {
     hasAllLoads: !!response.data.allLoads,
     allLoadsCount: response.data.allLoads?.length,
-    hasLoad: !!response.data.load,
+    hasLoad: true,
     loadCount: response.data.load?.length,
     total: response.data.total,
-    currentPage: response.data.currentPage
+    currentPage: response.data.currentPage,
+    totalPages: response.data.totalPages
   });
   
-  // Return the current page loads (not all loads)
-  return response.data.load || [];
+  return {
+    loads: response.data.load || [],
+    currentPage: response.data.currentPage || page,
+    totalPages: response.data.totalPages || 1,
+  };
 };
 
 export const checkToken = async () => {

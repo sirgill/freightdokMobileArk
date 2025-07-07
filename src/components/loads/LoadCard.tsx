@@ -1,5 +1,6 @@
 import React from 'react';
 import { View, Text, StyleSheet, TouchableOpacity } from 'react-native';
+import { MaterialIcons, FontAwesome5 } from '@expo/vector-icons';
 import { colors, spacing, typography } from '../../theme';
 
 export interface LoadCardProps {
@@ -7,8 +8,11 @@ export interface LoadCardProps {
   status: string;
   origin: string;
   destination: string;
-  pickupDate: string;
-  deliveryDate: string;
+  pickupDate?: string;
+  deliveryDate?: string;
+  equipmentType?: string;
+  referenceNumber?: string;
+  carrierName?: string;
   onPress?: () => void;
 }
 
@@ -27,6 +31,9 @@ export const LoadCard: React.FC<LoadCardProps> = ({
   destination,
   pickupDate,
   deliveryDate,
+  equipmentType,
+  referenceNumber,
+  carrierName,
   onPress,
 }) => {
   const statusColor = statusColors[status] || statusColors.default;
@@ -41,18 +48,46 @@ export const LoadCard: React.FC<LoadCardProps> = ({
       </View>
       <View style={styles.routeRow}>
         <View style={styles.routeCol}>
-          <Text style={styles.city}>{origin}</Text>
+          <FontAwesome5 name="dot-circle" size={16} color={colors.primary} style={styles.icon} />
+          <Text style={styles.city}>{origin || 'Unknown'}</Text>
           <Text style={styles.label}>Pickup</Text>
-          <Text style={styles.date}>{pickupDate}</Text>
+          <View style={styles.infoRow}>
+            <MaterialIcons name="calendar-today" size={14} color={colors.textMuted} style={styles.iconSmall} />
+            <Text style={styles.date}>{pickupDate || 'TBD'}</Text>
+          </View>
         </View>
         <View style={styles.routeArrow}>
-          <Text style={styles.arrow}>→</Text>
+          <MaterialIcons name="arrow-forward" size={24} color={colors.primary} />
         </View>
         <View style={styles.routeCol}>
-          <Text style={styles.city}>{destination}</Text>
+          <FontAwesome5 name="map-marker-alt" size={16} color={colors.primary} style={styles.icon} />
+          <Text style={styles.city}>{destination || 'Unknown'}</Text>
           <Text style={styles.label}>Drop</Text>
-          <Text style={styles.date}>{deliveryDate}</Text>
+          <View style={styles.infoRow}>
+            <MaterialIcons name="calendar-today" size={14} color={colors.textMuted} style={styles.iconSmall} />
+            <Text style={styles.date}>{deliveryDate || 'TBD'}</Text>
+          </View>
         </View>
+      </View>
+      <View style={styles.detailsRow}>
+        {equipmentType && (
+          <View style={styles.detailItem}>
+            <FontAwesome5 name="truck" size={14} color={colors.textSecondary} style={styles.iconSmall} />
+            <Text style={styles.detailText}>{equipmentType}</Text>
+          </View>
+        )}
+        {referenceNumber && (
+          <View style={styles.detailItem}>
+            <MaterialIcons name="confirmation-number" size={14} color={colors.textSecondary} style={styles.iconSmall} />
+            <Text style={styles.detailText}>Load # {referenceNumber}</Text>
+          </View>
+        )}
+        {carrierName && (
+          <View style={styles.detailItem}>
+            <MaterialIcons name="local-shipping" size={14} color={colors.textSecondary} style={styles.iconSmall} />
+            <Text style={styles.detailText}>{carrierName}</Text>
+          </View>
+        )}
       </View>
     </TouchableOpacity>
   );
@@ -98,6 +133,7 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
+    marginBottom: spacing.margin.sm,
   },
   routeCol: {
     flex: 1,
@@ -121,10 +157,32 @@ const styles = StyleSheet.create({
   routeArrow: {
     paddingHorizontal: spacing.padding.md,
   },
-  arrow: {
-    fontSize: 24,
-    color: colors.primary,
-    fontWeight: typography.fontWeight.bold,
+  icon: {
+    marginBottom: 2,
+  },
+  iconSmall: {
+    marginRight: 4,
+  },
+  infoRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginTop: 2,
+  },
+  detailsRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginTop: spacing.margin.sm,
+    flexWrap: 'wrap',
+  },
+  detailItem: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginRight: 16,
+    marginBottom: 2,
+  },
+  detailText: {
+    fontSize: typography.fontSize.small,
+    color: colors.textSecondary,
   },
 });
 
