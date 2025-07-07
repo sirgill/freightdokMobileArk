@@ -15,8 +15,10 @@ const api = axios.create({
 api.interceptors.request.use(
   async (config) => {
     const token = await AsyncStorage.getItem('token');
+    console.log('Token from AsyncStorage:', token ? 'Token exists' : 'No token found');
     if (token) {
       config.headers['X-Auth-Token'] = token;
+      console.log('Token added to headers:', config.headers['X-Auth-Token']);
     }
     console.log('API Request:', {
       method: config.method,
@@ -59,30 +61,20 @@ api.interceptors.response.use(
 export const authApi = {
   login: async (email: string, password: string) => {
     console.log('Starting login process...');
-    // First, get the token
-    const loginResponse = await api.post('/api/auth', { email, password });
-    console.log('Login response received:', loginResponse.data);
+    // Make a single POST request to /api/auth (same as frontend)
+    const response = await api.post('/api/auth', { email, password });
+    console.log('Login response received:', response.data);
     
-    if (loginResponse.status === 200) {
-      const token = loginResponse.data.token;
-      console.log('Token received, fetching user data...');
+    if (response.status === 200) {
+      // The response should contain token and user data directly
+      const { token, user } = response.data;
+      console.log('Token and user data extracted:', { token: !!token, user: !!user });
       
-      // Then get the user data with the token
-      const userResponse = await api.get('/api/auth', {
-        headers: {
-          'X-Auth-Token': token,
-        },
-      });
-      
-      console.log('User data received:', userResponse.data);
-      
-      if (userResponse.status === 200) {
-        return {
-          token,
-          user: userResponse.data.user,
-          orgId: userResponse.data.user.orgId,
-        };
-      }
+      return {
+        token,
+        user,
+        orgId: user?.orgId,
+      };
     }
     
     throw new Error('Authentication failed');
@@ -107,6 +99,21 @@ export const authApi = {
     const response = await api.post('/api/auth/reset-password', { token, password });
     return response.data;
   },
+};
+
+export const getActiveLoads = async () => {
+  console.log('getActiveLoads called');
+  const token = await AsyncStorage.getItem('token');
+  console.log('Current token in getActiveLoads:', token ? 'Token exists' : 'No token');
+  
+  const response = await api.get('/api/load/me');
+  return response.data;
+};
+
+export const checkToken = async () => {
+  const token = await AsyncStorage.getItem('token');
+  console.log('Token check result:', token ? 'Token exists' : 'No token found');
+  return token;
 };
 
 export default api; 

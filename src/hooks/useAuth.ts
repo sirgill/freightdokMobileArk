@@ -12,11 +12,19 @@ export const useAuth = () => {
   const login = useCallback(async (email: string, password: string) => {
     try {
       dispatch(setLoading(true));
+      console.log('useAuth: Starting login...');
       const response = await authApi.login(email, password);
+      console.log('useAuth: Login response received:', response);
+      
+      // Store token in AsyncStorage
       await AsyncStorage.setItem('token', response.token);
+      console.log('useAuth: Token stored in AsyncStorage');
+      
       dispatch(setUser({ user: response.user, token: response.token }));
       dispatch(setError(null));
+      console.log('useAuth: Login successful, user and token set in Redux');
     } catch (err) {
+      console.error('useAuth: Login error:', err);
       dispatch(setError(err instanceof Error ? err.message : 'An error occurred'));
     } finally {
       dispatch(setLoading(false));

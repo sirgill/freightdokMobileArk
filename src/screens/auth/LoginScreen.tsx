@@ -8,20 +8,17 @@ import {
   Platform,
   Alert,
 } from 'react-native';
-import { useDispatch } from 'react-redux';
 import { Button, Card, Input } from '../../components/ui';
 import { colors, typography, spacing } from '../../theme';
-import { setUser, setLoading, setError } from '../../store/slices/authSlice';
-import { authApi } from '../../services/api';
+import { useAuth } from '../../hooks/useAuth';
 
 export const LoginScreen: React.FC = () => {
-  const dispatch = useDispatch();
+  const { login, loading, error } = useAuth();
   const [formData, setFormData] = useState({
     email: '',
     password: '',
   });
   const [errors, setErrors] = useState<{ email?: string; password?: string }>({});
-  const [isLoading, setIsLoading] = useState(false);
 
   const handleInputChange = (name: string, value: string) => {
     setFormData(prev => ({ ...prev, [name]: value }));
@@ -56,21 +53,9 @@ export const LoginScreen: React.FC = () => {
   const handleLogin = async () => {
     if (!validateForm()) return;
 
-    setIsLoading(true);
-    dispatch(setLoading(true));
-    dispatch(setError(null));
-
     try {
-      const response = await authApi.login(formData.email, formData.password);
-      
-      dispatch(setUser({
-        user: response.user,
-        token: response.token,
-      }));
-
-      // Store token in AsyncStorage (handled by API service)
-      console.log('Login successful:', response.user.email);
-      
+      await login(formData.email, formData.password);
+      console.log('Login successful:', formData.email);
     } catch (error: any) {
       console.error('Login error:', error);
       
@@ -78,11 +63,7 @@ export const LoginScreen: React.FC = () => {
                           error.message || 
                           'Login failed. Please try again.';
       
-      dispatch(setError(errorMessage));
       Alert.alert('Login Error', errorMessage);
-    } finally {
-      setIsLoading(false);
-      dispatch(setLoading(false));
     }
   };
 
@@ -130,7 +111,7 @@ export const LoginScreen: React.FC = () => {
             <Button
               title="Sign In"
               onPress={handleLogin}
-              loading={isLoading}
+              loading={loading}
               fullWidth
               style={styles.loginButton}
             />

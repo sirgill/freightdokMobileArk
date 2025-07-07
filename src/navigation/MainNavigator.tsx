@@ -4,6 +4,7 @@ import { View, Text, StyleSheet } from 'react-native';
 import { useSafeAreaInsets, SafeAreaView } from 'react-native-safe-area-context';
 import { MainTabParamList } from './types';
 import { colors, typography } from '../theme';
+import ActiveLoadsScreen from '../screens/ActiveLoadsScreen';
 
 const Tab = createBottomTabNavigator<MainTabParamList>();
 
@@ -62,7 +63,7 @@ const MainNavigator = () => {
         />
         <Tab.Screen
           name="Active"
-          component={ActiveScreen}
+          component={ActiveLoadsScreen}
           options={{
             tabBarLabel: 'Active',
           }}
