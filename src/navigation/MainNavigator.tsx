@@ -1,6 +1,7 @@
 import React from 'react';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import { View, Text, StyleSheet } from 'react-native';
+import { useSafeAreaInsets, SafeAreaView } from 'react-native-safe-area-context';
 import { MainTabParamList } from './types';
 import { colors, typography } from '../theme';
 
@@ -14,16 +15,9 @@ const OpenBoardScreen = () => (
   </View>
 );
 
-const MyLoadsScreen = () => (
-  <View style={styles.screen}>
-    <Text style={styles.text}>My Loads Screen</Text>
-    <Text style={styles.subtext}>All your loads</Text>
-  </View>
-);
-
 const ActiveScreen = () => (
   <View style={styles.screen}>
-    <Text style={styles.text}>Active Screen</Text>
+    <Text style={styles.text}>Active Loads Screen</Text>
     <Text style={styles.subtext}>Currently active loads</Text>
   </View>
 );
@@ -43,67 +37,52 @@ const AccountScreen = () => (
 );
 
 const MainNavigator = () => {
+  const insets = useSafeAreaInsets();
+
   return (
-    <Tab.Navigator
-      screenOptions={{
-        headerShown: false,
-        tabBarActiveTintColor: colors.primary,
-        tabBarInactiveTintColor: colors.textSecondary,
-        tabBarStyle: styles.tabBar,
-        tabBarLabelStyle: styles.tabLabel,
-      }}
-    >
-      <Tab.Screen
-        name="OpenBoard"
-        component={OpenBoardScreen}
-        options={{
-          tabBarLabel: 'OpenBoard',
-          tabBarIcon: ({ color, size }) => (
-            <Text style={[styles.tabIcon, { color, fontSize: size }]}>📦</Text>
-          ),
+    <SafeAreaView style={{ flex: 1, backgroundColor: colors.white }} edges={['bottom', 'left', 'right']}>
+      <Tab.Navigator
+        screenOptions={{
+          headerShown: false,
+          tabBarActiveTintColor: colors.primary,
+          tabBarInactiveTintColor: colors.textSecondary,
+          tabBarStyle: [
+            styles.tabBar,
+            { paddingBottom: Math.max(insets.bottom, 8), height: 60 + insets.bottom },
+          ],
+          tabBarLabelStyle: styles.tabLabel,
         }}
-      />
-      <Tab.Screen
-        name="MyLoads"
-        component={MyLoadsScreen}
-        options={{
-          tabBarLabel: 'My Loads',
-          tabBarIcon: ({ color, size }) => (
-            <Text style={[styles.tabIcon, { color, fontSize: size }]}>🚛</Text>
-          ),
-        }}
-      />
-      <Tab.Screen
-        name="Active"
-        component={ActiveScreen}
-        options={{
-          tabBarLabel: 'Active',
-          tabBarIcon: ({ color, size }) => (
-            <Text style={[styles.tabIcon, { color, fontSize: size }]}>⚡</Text>
-          ),
-        }}
-      />
-      <Tab.Screen
-        name="Delivered"
-        component={DeliveredScreen}
-        options={{
-          tabBarLabel: 'Delivered',
-          tabBarIcon: ({ color, size }) => (
-            <Text style={[styles.tabIcon, { color, fontSize: size }]}>✅</Text>
-          ),
-        }}
-      />
-      <Tab.Screen
-        name="Account"
-        component={AccountScreen}
-        options={{
-          tabBarLabel: 'Account',
-          tabBarIcon: ({ color, size }) => (
-            <Text style={[styles.tabIcon, { color, fontSize: size }]}>👤</Text>
-          ),
-        }}
-      />
-    </Tab.Navigator>
+      >
+        <Tab.Screen
+          name="OpenBoard"
+          component={OpenBoardScreen}
+          options={{
+            tabBarLabel: 'OpenBoard',
+          }}
+        />
+        <Tab.Screen
+          name="Active"
+          component={ActiveScreen}
+          options={{
+            tabBarLabel: 'Active',
+          }}
+        />
+        <Tab.Screen
+          name="Delivered"
+          component={DeliveredScreen}
+          options={{
+            tabBarLabel: 'Delivered',
+          }}
+        />
+        <Tab.Screen
+          name="Account"
+          component={AccountScreen}
+          options={{
+            tabBarLabel: 'Account',
+          }}
+        />
+      </Tab.Navigator>
+    </SafeAreaView>
   );
 };
 
@@ -128,16 +107,14 @@ const styles = StyleSheet.create({
     backgroundColor: colors.white,
     borderTopColor: colors.borderLight,
     borderTopWidth: 1,
-    paddingBottom: 8,
     paddingTop: 8,
     height: 60,
   },
   tabLabel: {
     fontSize: typography.fontSize.small,
     fontWeight: typography.fontWeight.medium,
-  },
-  tabIcon: {
-    marginBottom: 2,
+    textTransform: 'capitalize',
+    letterSpacing: 0.5,
   },
 });
 
