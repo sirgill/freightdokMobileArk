@@ -47,9 +47,9 @@ export const Button: React.FC<ButtonProps> = ({
       activeOpacity={0.8}
     >
       {loading ? (
-        <ActivityIndicator 
-          color={variant === 'primary' ? colors.white : colors.primary} 
-          size="small" 
+        <ActivityIndicator
+          color={variant === 'primary' ? colors.white : colors.primary}
+          size="small"
         />
       ) : (
         <Text style={textStyle}>{title}</Text>
@@ -65,7 +65,7 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     flexDirection: 'row',
   },
-  
+
   // Variants
   primary: {
     backgroundColor: colors.primary,
@@ -81,7 +81,7 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     borderColor: colors.border,
   },
-  
+
   // Sizes
   small: {
     paddingVertical: spacing.padding.xs,
@@ -98,23 +98,23 @@ const styles = StyleSheet.create({
     paddingHorizontal: spacing.padding.xl,
     minHeight: 56,
   },
-  
+
   // Full width
   fullWidth: {
     width: '100%',
   },
-  
+
   // Disabled state
   disabled: {
     opacity: 0.6,
   },
-  
+
   // Text styles
   text: {
     fontWeight: typography.fontWeight.bold,
     textAlign: 'center',
   },
-  
+
   primaryText: {
     color: colors.white,
   },
@@ -124,7 +124,7 @@ const styles = StyleSheet.create({
   outlineText: {
     color: colors.textPrimary,
   },
-  
+
   smallText: {
     fontSize: typography.fontSize.small,
   },
@@ -134,8 +134,8 @@ const styles = StyleSheet.create({
   largeText: {
     fontSize: typography.fontSize.title,
   },
-  
+
   disabledText: {
     opacity: 0.6,
   },
-}); 
+});

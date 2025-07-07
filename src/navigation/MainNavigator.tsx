@@ -5,6 +5,7 @@ import { useSafeAreaInsets, SafeAreaView } from 'react-native-safe-area-context'
 import { MainTabParamList } from './types';
 import { colors, typography } from '../theme';
 import ActiveLoadsScreen from '../screens/ActiveLoadsScreen';
+import LoadDetailsScreen from '../screens/LoadDetailsScreen';
 
 const Tab = createBottomTabNavigator<MainTabParamList>();
 
@@ -119,4 +120,4 @@ const styles = StyleSheet.create({
   },
 });
 
-export default MainNavigator; 
+export default MainNavigator;

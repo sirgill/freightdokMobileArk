@@ -16,4 +16,4 @@ export type { ColorKey } from './colors';
 export type { TypographyKey } from './typography';
 
 // Theme type for use in components
-export type Theme = typeof theme; 
+export type Theme = typeof theme;

@@ -6,7 +6,7 @@ export const spacing = {
   lg: 24,
   xl: 32,
   xxl: 48,
-  
+
   // Specific spacing values
   padding: {
     xs: 4,
@@ -15,7 +15,7 @@ export const spacing = {
     lg: 24,
     xl: 32,
   },
-  
+
   margin: {
     xs: 4,
     sm: 8,
@@ -23,7 +23,7 @@ export const spacing = {
     lg: 24,
     xl: 32,
   },
-  
+
   // Border radius
   borderRadius: {
     xs: 4,
@@ -33,7 +33,7 @@ export const spacing = {
     xl: 24,
     round: 50, // For circular elements
   },
-  
+
   // Shadows (matching web app)
   shadows: {
     small: {
@@ -58,4 +58,4 @@ export const spacing = {
       elevation: 8,
     },
   },
-} as const; 
+} as const;

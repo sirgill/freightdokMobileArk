@@ -6,4 +6,4 @@ export { Input } from './Input';
 // Export types
 export type { ButtonProps } from './Button';
 export type { CardProps } from './Card';
-export type { InputProps } from './Input'; 
+export type { InputProps } from './Input';

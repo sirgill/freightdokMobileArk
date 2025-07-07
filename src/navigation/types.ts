@@ -1,6 +1,7 @@
 export type RootStackParamList = {
   Auth: undefined;
   Main: undefined;
+  LoadDetails: { load: any };
 };
 
 export type AuthStackParamList = {
@@ -38,4 +39,4 @@ export type AccountStackParamList = {
   AccountScreen: undefined;
   Settings: undefined;
   Profile: undefined;
-}; 
+};

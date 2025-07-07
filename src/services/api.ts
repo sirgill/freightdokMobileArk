@@ -64,19 +64,19 @@ export const authApi = {
     // Make a single POST request to /api/auth (same as frontend)
     const response = await api.post('/api/auth', { email, password });
     console.log('Login response received:', response.data);
-    
+
     if (response.status === 200) {
       // The response should contain token and user data directly
       const { token, user } = response.data;
       console.log('Token and user data extracted:', { token: !!token, user: !!user });
-      
+
       return {
         token,
         user,
         orgId: user?.orgId,
       };
     }
-    
+
     throw new Error('Authentication failed');
   },
 
@@ -105,7 +105,7 @@ export const getActiveLoads = async (page = 1) => {
   console.log('getActiveLoads called, page:', page);
   const token = await AsyncStorage.getItem('token');
   console.log('Current token in getActiveLoads:', token ? 'Token exists' : 'No token');
-  
+
   const response = await api.get(`/api/load/me?page=${page}&limit=100`);
   console.log('Loads response structure:', {
     hasAllLoads: !!response.data.allLoads,
@@ -114,14 +114,45 @@ export const getActiveLoads = async (page = 1) => {
     loadCount: response.data.load?.length,
     total: response.data.total,
     currentPage: response.data.currentPage,
-    totalPages: response.data.totalPages
+    totalPages: response.data.totalPages,
   });
-  
+
   return {
     loads: response.data.load || [],
     currentPage: response.data.currentPage || page,
     totalPages: response.data.totalPages || 1,
   };
+};
+
+export const updateLoadStatus = async (loadId: string, status: string) => {
+  console.log('updateLoadStatus called:', { loadId, status });
+  
+  try {
+    const formData = new FormData();
+    formData.append('_id', loadId);
+    formData.append('status', status);
+    
+    const response = await api.patch('/api/load/modify', formData, {
+      headers: {
+        'Content-Type': 'multipart/form-data',
+      },
+    });
+    
+    console.log('Status update response:', response.data);
+    
+    if (response.data.success) {
+      return {
+        success: true,
+        data: response.data,
+        message: 'Status updated successfully'
+      };
+    } else {
+      throw new Error(response.data.message || 'Failed to update status');
+    }
+  } catch (error: any) {
+    console.error('Status update error:', error);
+    throw new Error(error.response?.data?.message || error.message || 'Failed to update status');
+  }
 };
 
 export const checkToken = async () => {
@@ -130,4 +161,4 @@ export const checkToken = async () => {
   return token;
 };
 
-export default api; 
+export default api;

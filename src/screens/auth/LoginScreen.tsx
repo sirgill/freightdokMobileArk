@@ -51,18 +51,18 @@ export const LoginScreen: React.FC = () => {
   };
 
   const handleLogin = async () => {
-    if (!validateForm()) return;
+    if (!validateForm()) {return;}
 
     try {
       await login(formData.email, formData.password);
       console.log('Login successful:', formData.email);
     } catch (error: any) {
       console.error('Login error:', error);
-      
-      const errorMessage = error.response?.data?.message || 
-                          error.message || 
+
+      const errorMessage = error.response?.data?.message ||
+                          error.message ||
                           'Login failed. Please try again.';
-      
+
       Alert.alert('Login Error', errorMessage);
     }
   };
@@ -189,4 +189,4 @@ const styles = StyleSheet.create({
   },
 });
 
-export default LoginScreen; 
+export default LoginScreen;

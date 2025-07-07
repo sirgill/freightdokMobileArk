@@ -6,6 +6,7 @@ import { RootStackParamList } from './types';
 import AuthNavigator from './AuthNavigator';
 import MainNavigator from './MainNavigator';
 import { RootState } from '../store';
+import LoadDetailsScreen from '../screens/LoadDetailsScreen';
 
 const Stack = createNativeStackNavigator<RootStackParamList>();
 
@@ -21,9 +22,12 @@ export const RootNavigator = () => {
         {!isAuthenticated ? (
           <Stack.Screen name="Auth" component={AuthNavigator} />
         ) : (
-          <Stack.Screen name="Main" component={MainNavigator} />
+          <>
+            <Stack.Screen name="Main" component={MainNavigator} />
+            <Stack.Screen name="LoadDetails" component={LoadDetailsScreen} options={{ headerShown: true, title: 'Load Details' }} />
+          </>
         )}
       </Stack.Navigator>
     </NavigationContainer>
   );
-}; 
+};

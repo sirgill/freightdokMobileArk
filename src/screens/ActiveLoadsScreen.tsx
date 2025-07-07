@@ -1,10 +1,13 @@
 import React, { useEffect, useState } from 'react';
 import { View, Text, FlatList, ActivityIndicator, StyleSheet, RefreshControl } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
+import { useNavigation, useFocusEffect } from '@react-navigation/native';
 import LoadCard from '../components/loads/LoadCard';
 import { colors, spacing, typography } from '../theme';
 import { getActiveLoads } from '../services/api';
 import { parseISO, isValid, format } from 'date-fns';
+import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
+import type { RootStackParamList } from '../navigation/types';
 
 interface Load {
   _id: string;
@@ -31,6 +34,7 @@ interface Load {
 }
 
 const ActiveLoadsScreen: React.FC = () => {
+  const navigation = useNavigation<NativeStackNavigationProp<RootStackParamList>>();
   const [loads, setLoads] = useState<Load[]>([]);
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
@@ -74,6 +78,13 @@ const ActiveLoadsScreen: React.FC = () => {
   useEffect(() => {
     fetchLoads(1);
   }, []);
+
+  // Refresh loads when screen comes into focus (e.g., returning from LoadDetailsScreen)
+  useFocusEffect(
+    React.useCallback(() => {
+      fetchLoads(1);
+    }, [])
+  );
 
   const onRefresh = async () => {
     setRefreshing(true);
@@ -120,33 +131,33 @@ const ActiveLoadsScreen: React.FC = () => {
         renderItem={({ item }) => {
           // Helper to extract city/state from string or object
           const getCityState = (loc: any, cityKey = 'city', stateKey = 'stateCode') => {
-            if (!loc) return { city: 'Unknown', state: '' };
-            if (typeof loc === 'string') return { city: loc, state: '' };
+            if (!loc) {return { city: 'Unknown', state: '' };}
+            if (typeof loc === 'string') {return { city: loc, state: '' };}
             return {
               city: loc[cityKey] || 'Unknown',
-              state: loc[stateKey] || ''
+              state: loc[stateKey] || '',
             };
           };
 
           // Origin
           let origin = getCityState(item.origin);
-          if (origin.city === 'Unknown') origin = getCityState(item.pickupLocation);
+          if (origin.city === 'Unknown') {origin = getCityState(item.pickupLocation);}
           if (origin.city === 'Unknown' && item.pickup && Array.isArray(item.pickup) && item.pickup[0]) {
             origin = getCityState(item.pickup[0], 'pickupCity', 'pickupState');
           }
 
           // Destination
           let destination = getCityState(item.destination);
-          if (destination.city === 'Unknown') destination = getCityState(item.deliveryLocation);
+          if (destination.city === 'Unknown') {destination = getCityState(item.deliveryLocation);}
           if (destination.city === 'Unknown' && item.drop && Array.isArray(item.drop) && item.drop[0]) {
             destination = getCityState(item.drop[0], 'dropCity', 'dropState');
           }
 
           // Dates (format to MM/DD/YYYY, remove time)
           const formatDate = (dateStr: string) => {
-            if (!dateStr) return 'TBD';
+            if (!dateStr) {return 'TBD';}
             const d = parseISO(dateStr);
-            if (!isValid(d)) return 'TBD';
+            if (!isValid(d)) {return 'TBD';}
             return format(d, 'MM/dd/yyyy');
           };
           const pickupDate = formatDate(item.pickUpByDate || item.pickupDate || (item.pickup && Array.isArray(item.pickup) && item.pickup[0]?.pickupDate) || item.pickupDateTime || '');
@@ -174,7 +185,8 @@ const ActiveLoadsScreen: React.FC = () => {
               equipmentType={equipmentType}
               referenceNumber={referenceNumber}
               carrierName={carrierName}
-              onPress={() => {}}
+              load={item}
+              onPress={() => navigation.navigate('LoadDetails', { load: item })}
             />
           );
         }}
@@ -214,4 +226,4 @@ const styles = StyleSheet.create({
   },
 });
 
-export default ActiveLoadsScreen; 
+export default ActiveLoadsScreen;

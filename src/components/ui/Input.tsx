@@ -128,4 +128,4 @@ const styles = StyleSheet.create({
   errorText: {
     color: colors.error,
   },
-}); 
+});

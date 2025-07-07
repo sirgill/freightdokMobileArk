@@ -28,4 +28,4 @@ export const isProduction = () => !isDevelopment;
 export const isDev = () => isDevelopment;
 
 console.log('Environment:', isDevelopment ? 'Development' : 'Production');
-console.log('API URL:', getApiUrl()); 
+console.log('API URL:', getApiUrl());

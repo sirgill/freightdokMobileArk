@@ -2,6 +2,7 @@ import React from 'react';
 import { View, Text, StyleSheet, TouchableOpacity } from 'react-native';
 import { MaterialIcons, FontAwesome5 } from '@expo/vector-icons';
 import { colors, spacing, typography } from '../../theme';
+import { useNavigation } from '@react-navigation/native';
 
 export interface LoadCardProps {
   price: number | string;
@@ -24,7 +25,7 @@ const statusColors: Record<string, string> = {
   default: colors.primary,
 };
 
-export const LoadCard: React.FC<LoadCardProps> = ({
+export const LoadCard: React.FC<LoadCardProps & { load?: any }> = ({
   price,
   status,
   origin,
@@ -35,14 +36,21 @@ export const LoadCard: React.FC<LoadCardProps> = ({
   referenceNumber,
   carrierName,
   onPress,
+  load,
 }) => {
+  const navigation = useNavigation();
   const statusColor = statusColors[status] || statusColors.default;
 
+  const handlePress = () => {
+    if (onPress) {onPress();}
+    else if (load) {navigation.navigate('LoadDetails', { load });}
+  };
+
   return (
-    <TouchableOpacity style={styles.card} activeOpacity={0.9} onPress={onPress}>
+    <TouchableOpacity style={styles.card} activeOpacity={0.9} onPress={handlePress}>
       <View style={styles.header}>
         <Text style={styles.price}>${price}</Text>
-        <View style={[styles.statusBadge, { backgroundColor: statusColor }]}> 
+        <View style={[styles.statusBadge, { backgroundColor: statusColor }]}>
           <Text style={styles.statusText}>{status}</Text>
         </View>
       </View>
@@ -186,4 +194,4 @@ const styles = StyleSheet.create({
   },
 });
 
-export default LoadCard; 
+export default LoadCard;

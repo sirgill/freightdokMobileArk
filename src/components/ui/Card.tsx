@@ -34,7 +34,7 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     borderColor: colors.borderLight,
   },
-  
+
   // Padding variants
   paddingXs: {
     padding: spacing.padding.xs,
@@ -51,7 +51,7 @@ const styles = StyleSheet.create({
   paddingXl: {
     padding: spacing.padding.xl,
   },
-  
+
   // Border radius variants
   borderRadiusXs: {
     borderRadius: spacing.borderRadius.xs,
@@ -68,7 +68,7 @@ const styles = StyleSheet.create({
   borderRadiusXl: {
     borderRadius: spacing.borderRadius.xl,
   },
-  
+
   // Shadow variants
   shadowSmall: {
     ...spacing.shadows.small,
@@ -79,4 +79,4 @@ const styles = StyleSheet.create({
   shadowLarge: {
     ...spacing.shadows.large,
   },
-}); 
+});

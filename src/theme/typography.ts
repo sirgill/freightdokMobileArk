@@ -6,7 +6,7 @@ export const typography = {
     bold: 'System',
     extraBold: 'System',
   },
-  
+
   // Font sizes matching web app
   fontSize: {
     xs: 12,
@@ -16,7 +16,7 @@ export const typography = {
     heading: 32,
     large: 56,
   },
-  
+
   // Font weights
   fontWeight: {
     light: '300',
@@ -25,14 +25,14 @@ export const typography = {
     bold: '700',
     extraBold: '900',
   },
-  
+
   // Line heights
   lineHeight: {
     tight: 1.2,
     normal: 1.4,
     relaxed: 1.6,
   },
-  
+
   // Text styles for common use cases
   textStyles: {
     h1: {
@@ -68,4 +68,4 @@ export const typography = {
   },
 } as const;
 
-export type TypographyKey = keyof typeof typography.textStyles; 
+export type TypographyKey = keyof typeof typography.textStyles;
