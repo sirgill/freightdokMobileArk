@@ -107,7 +107,17 @@ export const getActiveLoads = async () => {
   console.log('Current token in getActiveLoads:', token ? 'Token exists' : 'No token');
   
   const response = await api.get('/api/load/me');
-  return response.data;
+  console.log('Loads response structure:', {
+    hasAllLoads: !!response.data.allLoads,
+    allLoadsCount: response.data.allLoads?.length,
+    hasLoad: !!response.data.load,
+    loadCount: response.data.load?.length,
+    total: response.data.total,
+    currentPage: response.data.currentPage
+  });
+  
+  // Return the current page loads (not all loads)
+  return response.data.load || [];
 };
 
 export const checkToken = async () => {

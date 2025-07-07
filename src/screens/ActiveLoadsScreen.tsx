@@ -7,12 +7,17 @@ import { getActiveLoads } from '../services/api';
 
 interface Load {
   _id: string;
-  price: number;
-  status: string;
-  origin: string;
-  destination: string;
-  pickupDate: string;
-  deliveryDate: string;
+  price?: number;
+  rate?: number;
+  status?: string;
+  origin?: string;
+  destination?: string;
+  pickupDate?: string;
+  deliveryDate?: string;
+  pickupLocation?: string;
+  deliveryLocation?: string;
+  pickupDateTime?: string;
+  deliveryDateTime?: string;
 }
 
 const ActiveLoadsScreen: React.FC = () => {
@@ -26,10 +31,17 @@ const ActiveLoadsScreen: React.FC = () => {
     setError(null);
     try {
       const allLoads = await getActiveLoads();
+      console.log('Fetched loads:', allLoads.length, 'loads');
+      if (allLoads.length > 0) {
+        console.log('First load structure:', allLoads[0]);
+      }
+      
       // Filter out delivered loads
       const activeLoads = allLoads.filter((l: Load) => l.status !== 'Delivered');
+      console.log('Active loads after filtering:', activeLoads.length);
       setLoads(activeLoads);
     } catch (err: any) {
+      console.error('Error fetching loads:', err);
       setError('Failed to load active loads.');
     } finally {
       setLoading(false);
@@ -76,17 +88,28 @@ const ActiveLoadsScreen: React.FC = () => {
       <FlatList
         data={loads}
         keyExtractor={item => item._id}
-        renderItem={({ item }) => (
-          <LoadCard
-            price={item.price}
-            status={item.status}
-            origin={item.origin}
-            destination={item.destination}
-            pickupDate={item.pickupDate}
-            deliveryDate={item.deliveryDate}
-            onPress={() => {}}
-          />
-        )}
+        renderItem={({ item }) => {
+          console.log('Rendering load:', item._id, 'with data:', {
+            price: item.price || item.rate,
+            status: item.status,
+            origin: item.origin || item.pickupLocation,
+            destination: item.destination || item.deliveryLocation,
+            pickupDate: item.pickupDate || item.pickupDateTime,
+            deliveryDate: item.deliveryDate || item.deliveryDateTime
+          });
+          
+          return (
+            <LoadCard
+              price={item.price || item.rate || 0}
+              status={item.status || 'Active'}
+              origin={item.origin || item.pickupLocation || 'Unknown'}
+              destination={item.destination || item.deliveryLocation || 'Unknown'}
+              pickupDate={item.pickupDate || item.pickupDateTime || 'TBD'}
+              deliveryDate={item.deliveryDate || item.deliveryDateTime || 'TBD'}
+              onPress={() => {}}
+            />
+          );
+        }}
         contentContainerStyle={{ paddingVertical: spacing.padding.md }}
         refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} />}
       />
