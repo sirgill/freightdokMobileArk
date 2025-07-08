@@ -1,12 +1,16 @@
 import React, { useState } from 'react';
-import { View, Text, ScrollView, StyleSheet, TouchableOpacity, Alert, ActivityIndicator } from 'react-native';
+import { View, Text, ScrollView, StyleSheet, TouchableOpacity, Alert, ActivityIndicator, Image, ActionSheetIOS, Platform } from 'react-native';
 import { RouteProp, useRoute } from '@react-navigation/native';
 import { MaterialIcons, FontAwesome5 } from '@expo/vector-icons';
+import { Ionicons, MaterialCommunityIcons } from '@expo/vector-icons';
 import { colors, spacing, typography } from '../theme';
 import { parseISO, isValid, format } from 'date-fns';
 import StatusDropdown from '../components/StatusDropdown';
 import { updateLoadStatus } from '../services/api';
 import { LOAD_STATUSES } from '../components/StatusDropdown';
+import * as DocumentPicker from 'expo-document-picker';
+import * as ImagePicker from 'expo-image-picker';
+import { uploadLoadDocument, removeLoadDocument } from '../services/api';
 
 // Define the expected route params
 interface LoadDetailsScreenRouteParams {
@@ -31,6 +35,21 @@ const LoadDetailsScreen: React.FC = () => {
   const [isUpdating, setIsUpdating] = useState(false);
   const [currentLoad, setCurrentLoad] = useState(load);
   const [showStatusDropdown, setShowStatusDropdown] = useState(false);
+  const [uploading, setUploading] = useState(false);
+  const [uploadError, setUploadError] = useState<string | null>(null);
+  const [removing, setRemoving] = useState<{ [key: string]: string | null }>({});
+  const [removeError, setRemoveError] = useState<{ [key: string]: string | null }>({});
+
+  // DEBUG: Log all relevant data
+  console.log('=== LOAD DETAILS DEBUG ===');
+  console.log('route.params:', route.params);
+  console.log('load:', load);
+  console.log('currentLoad:', currentLoad);
+  console.log('currentLoad.status:', currentLoad?.status);
+  console.log('currentLoad.status type:', typeof currentLoad?.status);
+  console.log('Status comparison:', currentLoad?.status === 'Delivered');
+  console.log('Status comparison (lowercase):', currentLoad?.status?.toLowerCase() === 'delivered');
+  console.log('=== END DEBUG ===');
 
   // Helper to format dates consistently
   const formatDateTime = (dateStr: string) => {
@@ -329,6 +348,167 @@ const LoadDetailsScreen: React.FC = () => {
               </View>
             )}
           </View>
+
+          {currentLoad.status?.toLowerCase() === 'delivered' && (
+            <View style={styles.section}>
+              <Text style={styles.sectionTitle}>Documents</Text>
+              {['proofDelivery', 'lumper', 'accessorialsFiles'].map((docType) => {
+                const labelMap: Record<string, string> = {
+                  proofDelivery: 'Proof of Delivery (POD)',
+                  lumper: 'Lumper Receipt',
+                  accessorialsFiles: 'Accessorials',
+                };
+                const files = (currentLoad[docType] || currentLoad.bucketFiles?.filter((f: any) => f.fileType === docType)) || [];
+                // Remove handler
+                const handleRemoveDocument = async (file: any) => {
+                  setRemoveError(prev => ({ ...prev, [docType]: null }));
+                  setRemoving(prev => ({ ...prev, [docType]: file.name }));
+                  console.log('REMOVE DOC DEBUG: removing', file.name, 'from', docType);
+                  try {
+                    await removeLoadDocument(currentLoad._id, docType, file.name);
+                    // Remove from UI by refetching or updating currentLoad
+                    const updatedFiles = (currentLoad[docType] || []).filter((f: any) => f.name !== file.name);
+                    setCurrentLoad({ ...currentLoad, [docType]: updatedFiles });
+                  } catch (err) {
+                    setRemoveError(prev => ({ ...prev, [docType]: 'Failed to remove document' }));
+                  } finally {
+                    setRemoving(prev => ({ ...prev, [docType]: null }));
+                  }
+                };
+                // Handler for Add Document
+                const handleAddDocument = async () => {
+                  setUploadError(null);
+                  if (Platform.OS === 'ios') {
+                    ActionSheetIOS.showActionSheetWithOptions({
+                      options: ['Cancel', 'Take Photo', 'Choose from Library', 'Choose PDF'],
+                      cancelButtonIndex: 0,
+                    }, async (buttonIndex) => {
+                      let file = null;
+                      if (buttonIndex === 1) {
+                        // Take Photo
+                        const result = await ImagePicker.launchCameraAsync({ mediaTypes: ImagePicker.MediaTypeOptions.Images, quality: 0.8 });
+                        if (!result.canceled && result.assets && result.assets.length > 0) {
+                          file = result.assets[0];
+                        }
+                      } else if (buttonIndex === 2) {
+                        // Choose from Library
+                        const result = await ImagePicker.launchImageLibraryAsync({ mediaTypes: ImagePicker.MediaTypeOptions.Images, quality: 0.8 });
+                        if (!result.canceled && result.assets && result.assets.length > 0) {
+                          file = result.assets[0];
+                        }
+                      } else if (buttonIndex === 3) {
+                        // Choose PDF
+                        const result = await DocumentPicker.getDocumentAsync({ type: 'application/pdf', copyToCacheDirectory: true });
+                        if (!result.canceled && result.assets && result.assets.length > 0) {
+                          file = result.assets[0];
+                        }
+                      }
+                      if (file) {
+                        setUploading(true);
+                        try {
+                          const updatedLoad = await uploadLoadDocument(currentLoad._id, docType, file);
+                          setCurrentLoad(updatedLoad);
+                        } catch (err: any) {
+                          setUploadError('Failed to upload document');
+                        } finally {
+                          setUploading(false);
+                        }
+                      }
+                    });
+                  } else {
+                    // Android: Use a simple Alert for now (replace with a real ActionSheet if desired)
+                    Alert.alert('Add Document', 'Choose an option', [
+                      { text: 'Take Photo', onPress: async () => {
+                        const result = await ImagePicker.launchCameraAsync({ mediaTypes: ImagePicker.MediaTypeOptions.Images, quality: 0.8 });
+                        if (!result.canceled && result.assets && result.assets.length > 0) {
+                          setUploading(true);
+                          try {
+                            const updatedLoad = await uploadLoadDocument(currentLoad._id, docType, result.assets[0]);
+                            setCurrentLoad(updatedLoad);
+                          } catch (err: any) {
+                            setUploadError('Failed to upload document');
+                          } finally {
+                            setUploading(false);
+                          }
+                        }
+                      }},
+                      { text: 'Choose from Library', onPress: async () => {
+                        const result = await ImagePicker.launchImageLibraryAsync({ mediaTypes: ImagePicker.MediaTypeOptions.Images, quality: 0.8 });
+                        if (!result.canceled && result.assets && result.assets.length > 0) {
+                          setUploading(true);
+                          try {
+                            const updatedLoad = await uploadLoadDocument(currentLoad._id, docType, result.assets[0]);
+                            setCurrentLoad(updatedLoad);
+                          } catch (err: any) {
+                            setUploadError('Failed to upload document');
+                          } finally {
+                            setUploading(false);
+                          }
+                        }
+                      }},
+                      { text: 'Choose PDF', onPress: async () => {
+                        const result = await DocumentPicker.getDocumentAsync({ type: 'application/pdf', copyToCacheDirectory: true });
+                        if (!result.canceled && result.assets && result.assets.length > 0) {
+                          setUploading(true);
+                          try {
+                            const updatedLoad = await uploadLoadDocument(currentLoad._id, docType, result.assets[0]);
+                            setCurrentLoad(updatedLoad);
+                          } catch (err: any) {
+                            setUploadError('Failed to upload document');
+                          } finally {
+                            setUploading(false);
+                          }
+                        }
+                      }},
+                      { text: 'Cancel', style: 'cancel' },
+                    ]);
+                  }
+                };
+                return (
+                  <View key={docType} style={styles.docSectionModern}>
+                    <Text style={styles.docLabel}>{labelMap[docType]}</Text>
+                    <View style={styles.docFilesRowModern}>
+                      {uploading && <ActivityIndicator size="small" color={colors.primary} style={{ marginRight: 8 }} />}
+                      {uploadError && <Text style={{ color: colors.error, marginRight: 8 }}>{uploadError}</Text>}
+                      {Array.isArray(files) && files.length > 0 ? (
+                        files.map((file: any, idx: number) => {
+                          const uri = file.fileLocation || file.url || file.name || file;
+                          const isImage = uri && (uri.endsWith('.jpg') || uri.endsWith('.jpeg') || uri.endsWith('.png'));
+                          const isPdf = uri && uri.endsWith('.pdf');
+                          return (
+                            <View key={idx} style={styles.docFileThumbModern}>
+                              <TouchableOpacity onPress={() => {/* TODO: preview file */}}>
+                                {isImage ? (
+                                  <Image source={{ uri }} style={styles.docImageThumbModern} />
+                                ) : isPdf ? (
+                                  <MaterialCommunityIcons name="file-pdf-box" size={36} color={colors.primary} />
+                                ) : (
+                                  <Ionicons name="document" size={36} color={colors.textSecondary} />
+                                )}
+                              </TouchableOpacity>
+                              <TouchableOpacity style={styles.removeIconModern} onPress={() => handleRemoveDocument(file)} disabled={removing[docType] === file.name}>
+                                {removing[docType] === file.name ? (
+                                  <ActivityIndicator size="small" color={colors.error} />
+                                ) : (
+                                  <MaterialCommunityIcons name="trash-can-outline" size={20} color={colors.error} />
+                                )}
+                              </TouchableOpacity>
+                            </View>
+                          );
+                        })
+                      ) : (
+                        <Text style={styles.noDocText}>No files</Text>
+                      )}
+                      <TouchableOpacity style={styles.addDocBtnModern} onPress={handleAddDocument}>
+                        <Ionicons name="add-circle" size={36} color={colors.primary} />
+                        <Text style={styles.addDocBtnTextModern}>Add Document</Text>
+                      </TouchableOpacity>
+                    </View>
+                  </View>
+                );
+              })}
+            </View>
+          )}
         </View>
       </ScrollView>
     </>
@@ -562,6 +742,111 @@ const styles = StyleSheet.create({
     fontSize: typography.fontSize.small,
     color: colors.textSecondary,
     textAlign: 'center',
+  },
+  docSection: {
+    marginBottom: spacing.margin.md,
+  },
+  docLabel: {
+    fontSize: typography.fontSize.body,
+    fontWeight: typography.fontWeight.bold,
+    color: colors.textPrimary,
+    marginBottom: spacing.margin.sm,
+  },
+  docFilesRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    flexWrap: 'wrap',
+    gap: 8,
+  },
+  docFileThumb: {
+    width: 48,
+    height: 48,
+    borderRadius: 8,
+    backgroundColor: colors.lightGray,
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginRight: 8,
+    marginBottom: 8,
+  },
+  docImageThumb: {
+    width: 44,
+    height: 44,
+    borderRadius: 6,
+  },
+  pdfIcon: {
+    fontSize: 16,
+    color: colors.primary,
+    fontWeight: 'bold',
+  },
+  unknownIcon: {
+    fontSize: 14,
+    color: colors.textSecondary,
+  },
+  noDocText: {
+    color: colors.textSecondary,
+    fontSize: typography.fontSize.small,
+    marginRight: 8,
+  },
+  uploadBtn: {
+    backgroundColor: colors.primary,
+    borderRadius: 8,
+    paddingHorizontal: 12,
+    paddingVertical: 8,
+    marginRight: 8,
+    marginBottom: 8,
+  },
+  uploadBtnText: {
+    color: colors.white,
+    fontWeight: 'bold',
+    fontSize: typography.fontSize.small,
+  },
+  docSectionModern: {
+    marginBottom: spacing.margin.lg,
+    backgroundColor: colors.background,
+    borderRadius: spacing.borderRadius.md,
+    padding: spacing.padding.md,
+    shadowColor: colors.shadow,
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.06,
+    shadowRadius: 4,
+    elevation: 2,
+  },
+  docFilesRowModern: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    flexWrap: 'wrap',
+    marginTop: spacing.margin.sm,
+  },
+  docFileThumbModern: {
+    marginRight: 16,
+    alignItems: 'center',
+    position: 'relative',
+  },
+  docImageThumbModern: {
+    width: 48,
+    height: 48,
+    borderRadius: 8,
+    marginBottom: 4,
+  },
+  removeIconModern: {
+    position: 'absolute',
+    top: -8,
+    right: -8,
+    backgroundColor: colors.white,
+    borderRadius: 12,
+    padding: 2,
+    zIndex: 2,
+  },
+  addDocBtnModern: {
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginLeft: 8,
+    marginTop: 4,
+  },
+  addDocBtnTextModern: {
+    fontSize: typography.fontSize.small,
+    color: colors.primary,
+    marginTop: 2,
   },
 });
 

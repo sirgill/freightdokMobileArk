@@ -164,6 +164,9 @@ const DeliveredLoadsScreen: React.FC = () => {
           const status = item.status || 'Delivered';
           const carrierName = item.brokerage || item.company || '';
 
+          // DEBUG: Log the load item status
+          console.log('Load item status:', item.status, 'Processed status:', status);
+
           return (
             <LoadCard
               price={price}

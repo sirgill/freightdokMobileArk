@@ -175,4 +175,72 @@ export async function getInvoiceLoads(page = 1, limit = 100) {
   return await response.json();
 }
 
+export async function uploadLoadDocument(loadId: string, docType: string, file: any) {
+  const token = await AsyncStorage.getItem('token');
+  const formData = new FormData();
+  // Use docType as the field name
+  formData.append(docType, {
+    uri: file.uri,
+    name: file.name || `upload.${file.uri.split('.').pop()}`,
+    type: file.mimeType || file.type || 'application/octet-stream',
+  });
+  const url = `/api/load/upload/load/${loadId}/${docType}`;
+  // Debug logging
+  // Note: _parts is a React Native FormData property, not standard. Use Object.keys as fallback.
+  // @ts-ignore
+  const formDataKeys = (formData as any)._parts ? (formData as any)._parts.map(([k]: [string, any]) => k) : Object.keys(formData);
+  console.log('UPLOAD DEBUG: url', url);
+  console.log('UPLOAD DEBUG: formData keys', formDataKeys);
+  try {
+    const response = await api.patch(url, formData, {
+      headers: {
+        'x-auth-token': token || '',
+        'Content-Type': 'multipart/form-data',
+      },
+    });
+    console.log('UPLOAD DEBUG: response', response.status, response.data);
+    if (response.status === 200) {
+      return response.data;
+    } else {
+      throw new Error('Failed to upload document');
+    }
+  } catch (err) {
+    // Type guard for error
+    if (typeof err === 'object' && err !== null && 'response' in err) {
+      // @ts-ignore
+      console.error('UPLOAD DEBUG: error', err.response?.data || err.message);
+    } else {
+      console.error('UPLOAD DEBUG: error', err);
+    }
+    throw err;
+  }
+}
+
+export async function removeLoadDocument(loadId: string, docType: string, fileName: string) {
+  const token = await AsyncStorage.getItem('token');
+  const url = `/api/load/remove/doc/${loadId}/${docType}?doc_name=${encodeURIComponent(fileName)}`;
+  console.log('REMOVE DOC DEBUG: url', url);
+  try {
+    const response = await api.delete(url, {
+      headers: {
+        'x-auth-token': token || '',
+      },
+    });
+    console.log('REMOVE DOC DEBUG: response', response.status, response.data);
+    if (response.status === 200) {
+      return response.data;
+    } else {
+      throw new Error('Failed to remove document');
+    }
+  } catch (err) {
+    if (typeof err === 'object' && err !== null && 'response' in err) {
+      // @ts-ignore
+      console.error('REMOVE DOC DEBUG: error', err.response?.data || err.message);
+    } else {
+      console.error('REMOVE DOC DEBUG: error', err);
+    }
+    throw err;
+  }
+}
+
 export default api;
