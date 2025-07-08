@@ -161,4 +161,18 @@ export const checkToken = async () => {
   return token;
 };
 
+export async function getInvoiceLoads(page = 1, limit = 100) {
+  const token = await AsyncStorage.getItem('token');
+  const response = await fetch(`${API_URL}/api/load/invoice_loads?page=${page}&limit=${limit}`, {
+    headers: {
+      'x-auth-token': token || '',
+      'Content-Type': 'application/json',
+    },
+  });
+  if (!response.ok) {
+    throw new Error('Failed to fetch delivered loads');
+  }
+  return await response.json();
+}
+
 export default api;

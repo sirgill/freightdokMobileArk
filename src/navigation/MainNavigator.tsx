@@ -6,6 +6,7 @@ import { MainTabParamList } from './types';
 import { colors, typography } from '../theme';
 import ActiveLoadsScreen from '../screens/ActiveLoadsScreen';
 import LoadDetailsScreen from '../screens/LoadDetailsScreen';
+import DeliveredLoadsScreen from '../screens/DeliveredLoadsScreen';
 
 const Tab = createBottomTabNavigator<MainTabParamList>();
 
@@ -71,7 +72,7 @@ const MainNavigator = () => {
         />
         <Tab.Screen
           name="Delivered"
-          component={DeliveredScreen}
+          component={DeliveredLoadsScreen}
           options={{
             tabBarLabel: 'Delivered',
           }}
