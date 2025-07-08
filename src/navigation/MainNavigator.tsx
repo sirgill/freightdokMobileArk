@@ -7,6 +7,7 @@ import { colors, typography } from '../theme';
 import ActiveLoadsScreen from '../screens/ActiveLoadsScreen';
 import LoadDetailsScreen from '../screens/LoadDetailsScreen';
 import DeliveredLoadsScreen from '../screens/DeliveredLoadsScreen';
+import AccountScreen from '../screens/AccountScreen';
 
 const Tab = createBottomTabNavigator<MainTabParamList>();
 
@@ -29,13 +30,6 @@ const DeliveredScreen = () => (
   <View style={styles.screen}>
     <Text style={styles.text}>Delivered Screen</Text>
     <Text style={styles.subtext}>Completed loads</Text>
-  </View>
-);
-
-const AccountScreen = () => (
-  <View style={styles.screen}>
-    <Text style={styles.text}>Account Screen</Text>
-    <Text style={styles.subtext}>Profile and settings</Text>
   </View>
 );
 
